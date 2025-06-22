@@ -23,8 +23,12 @@ namespace PresetsPerFolder
     {
         void OnPreprocessTexture()
         {
-            TextureImporter textureImporter = (TextureImporter) assetImporter;
-            textureImporter.GetSourceTextureWidthAndHeight(out int width, out int height);
+            if (!assetPath.StartsWith("Assets/")) return;
+            
+            var textureImporter = (TextureImporter) assetImporter;
+            if (textureImporter.spriteImportMode != SpriteImportMode.Multiple) return;
+            
+            textureImporter.GetSourceTextureWidthAndHeight(out var width, out var height);
             SliceTexture(width, height);
         }
 
@@ -32,14 +36,17 @@ namespace PresetsPerFolder
         {
             var factory = new SpriteDataProviderFactories();
             factory.Init();
+            
             var dataProvider = factory.GetSpriteEditorDataProviderFromObject(assetImporter);
             dataProvider.InitSpriteEditorDataProvider();
+            
             var ppu = (int) dataProvider.pixelsPerUnit;
             var spriteRectList = new List<SpriteRect>();
             var count = 0;
-            for (int x = 0; x < width; x += ppu)
+            
+            for (var x = 0; x < width; x += ppu)
             {
-                for (int y = 0; y < height; y += ppu)
+                for (var y = 0; y < height; y += ppu)
                 {
                     var rect = new SpriteRect
                     {
@@ -50,10 +57,8 @@ namespace PresetsPerFolder
                     ++count;
                 }
             }
-            
 
             dataProvider.SetSpriteRects(spriteRectList.ToArray());
-
             dataProvider.Apply();
         }
         
